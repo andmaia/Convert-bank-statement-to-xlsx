@@ -79,7 +79,6 @@ class ProviderSicoob(ProviderBank):
             if(self._verify_pix_is_cpf(transaction)):
                 if(self._verify_word_key_exists(transaction,"Recebimento")):
                       item_for_convert[5]=' '.join(transaction[2])
-                      item_for_convert[6]=' '.join(transaction[3])
                 else: 
                       item_for_convert[6]=' '.join(transaction[2])
                       

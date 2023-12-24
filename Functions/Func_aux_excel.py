@@ -10,7 +10,7 @@ def create_dataframe(grouped_transactions):
     df = pd.DataFrame({
         'Data': [sublist[0] for sublist in grouped_transactions],
         'descricao': [sublist[2]  for sublist in grouped_transactions ],
-         "Valor": [float(sublist[3].replace('.', '', sublist[3].count('.') - 2).replace(',', '.').replace('D', '').replace('C', '')) for sublist in grouped_transactions],
+        "Valor": [float(sublist[3].replace('.', '', sublist[3].count('.') - 2).replace(',', '.').replace('D', '').replace('C', '')) for sublist in grouped_transactions],
         "Forma pagamento": [ sublist[1]for sublist in grouped_transactions],
         "Tipo": [sublist[4] for sublist in grouped_transactions],
         "CPF": [sublist[-3] for sublist in grouped_transactions],
