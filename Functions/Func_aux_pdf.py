@@ -6,7 +6,7 @@ def extract_text_pdf(caminho_arquivo):
     texto_completo = ''
     with pdfplumber.open(caminho_arquivo) as pdf:
         for page in pdf.pages:
-            texto_completo += page.extract_text()
+            texto_completo +='\n'+ page.extract_text()
     return texto_completo
 
 def extract_text_between_keywords(text, start_keyword, end_keyword):

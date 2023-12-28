@@ -17,6 +17,14 @@ class ProviderBank(ABC):
     @abstractmethod
     def create_ted_entrace(self, transaction):
         pass
+    
+    @abstractmethod
+    def create_transf_entrace(self,transaction):
+        pass
+
+    @abstractmethod
+    def create_dep_entrace(self,transaction):
+        pass
 
     @abstractmethod
     def _verify_discount(self, transaction):
@@ -40,4 +48,11 @@ class ProviderBank(ABC):
 
     @abstractmethod
     def _verify_ted(self, transaction):
+        pass
+    @abstractmethod
+    def _verify_dep(self,transaction):
+        pass
+    
+    @abstractmethod
+    def _verify_transf_pix(self,transaction):
         pass

@@ -17,22 +17,9 @@ class ProviderSicoob(ProviderBank):
                   payment_form ='CR'
                if payment_form ==  None or payment_form == words_payment[-1]:
                   payment_form ='DEB'
-              
-
-               item_for_convert_to_discount =[
-                transaction[0][0],
-                payment_form,
-                ' '.join(transaction[0][1:-1]),
-                transaction[0][-1][:-1],
-                'Pagamento',
-                '',
-                '',
-                '',
-                '']
-               
+               item_for_convert_to_discount =[transaction[0][0],payment_form,' '.join(transaction[0][1:-1]),transaction[0][-1][:-1],'Pagamento','','','','']
                if len(transaction)>2:
-                 item_for_convert_to_discount[-1] = ' '.join(transaction[-2])
-                   
+                 item_for_convert_to_discount[-1] = ' '.join(transaction[-2])     
                return item_for_convert_to_discount
         else:
                 pass
@@ -44,68 +31,52 @@ class ProviderSicoob(ProviderBank):
             payment_form = self._verify_payment_form(transaction[1],words_payment)
             if payment_form == None:
                 payment_form = 'CR'
-
-            item_for_convert=[
-                transaction[0][0],
-                payment_form,
-                ' '.join(transaction[0][1:-1]),
-                transaction[0][-1][:-1],
-                'Recebimento',
-                '',
-                '',
-                '',
-                ' '.join(transaction[1])]
+            item_for_convert=[transaction[0][0],payment_form,' '.join(transaction[0][1:-1]),transaction[0][-1][:-1],'Recebimento','','','',' '.join(transaction[1])]
             return item_for_convert
        else:
             pass
 
     def create_pix_entrace(self, transaction):
         item_for_convert = []
+
         if self._verify_pix(transaction):
-            item_for_convert=[
-                transaction[0][0],
-                transaction[0][1],
-                ' '.join(transaction[0][1:-1]),
-                transaction[0][-1][:-1],
-                transaction[1][0],
-                '',
-                '',
-                '',
-                '']
+            item_for_convert=[transaction[0][0],transaction[0][1],' '.join(transaction[0][1:-1]),transaction[0][-1][:-1],transaction[1][0],'','','',''] 
             if self._verify_if_comment_exists(transaction,'DOC.:'):
                   item_for_convert[-1]=' '.join(transaction[-2])
             if(self._verify_pix_is_cnpj(transaction)):
-                  item_for_convert[7]=''.join(transaction[2])
+                  item_for_convert[7]=' '.join(transaction[2])
             if(self._verify_pix_is_cpf(transaction)):
                 if(self._verify_word_key_exists(transaction,"Recebimento")):
                       item_for_convert[5]=' '.join(transaction[2])
+                      item_for_convert[6]=' '.join(transaction[3])
                 else: 
                       item_for_convert[6]=' '.join(transaction[2])
-                      
             return item_for_convert
         else:
             pass
-
+    def create_transf_entrace(self,transaction):
+        item_for_convert= []
+        if self._verify_transf_pix(transaction):
+            item_for_convert=[transaction[0][0],'TRANSFERÊNCIA',' '.join(transaction[0][1:-1]),transaction[0][-1][:-1],'Recebimento',''.join(transaction[-2]),' '.join(transaction[3]),'','']
+            return item_for_convert
+        else:
+            pass
     def create_ted_entrace(self, transaction):
         item_for_convert = []
         if self._verify_ted(transaction):
-             item_for_convert=[
-                transaction[0][0],
-                'TED',
-                ' '.join(transaction[0][1:-1]),
-                transaction[0][-1][:-1],
-                'Pagamento',
-                '',
-                '',
-                '',
-                '']
+             item_for_convert=[transaction[0][0],'TED',' '.join(transaction[0][1:-1]),transaction[0][-1][:-1],'Recebimento','','','','']
              if self._verify_pix_is_cnpj(transaction):
                  item_for_convert[7]=''.join(transaction[2]) 
              return item_for_convert
         else:
             pass
-
-
+    def create_dep_entrace(self, transaction):
+        item_for_convert=[]
+        if self._verify_dep(transaction):
+            item_for_convert=[transaction[0][0],'DEPOSITO',' '.join(transaction[0][1:-1]),transaction[0][-1][:-1],"Recebimento",'','','','']
+            return item_for_convert
+        else:
+            pass        
     def _verify_pix(self, transaction):
         for sub_array in transaction:
             if 'PIX' in sub_array or '.OUTR' in sub_array or 'Pix' in sub_array:
@@ -127,16 +98,14 @@ class ProviderSicoob(ProviderBank):
         first_item = transaction[0]
         second_item = transaction[1]
         if len(transaction) >= 2:
-            if 'CR' in first_item and 'SIPAG' in second_item[0]:
+            if 'CR' in first_item and ('SIPAG' in second_item[0] or 'CIELO' in second_item[0]):
                 return True
-        
         return False
 
     def _verify_pix_is_cpf(self, transaction):
         transaction_str = ''.join(''.join(sublist) + ' ' for sublist in transaction)
         cpf_pattern = re.compile(r'\*\*\*\.(\d{3}\.\d{3}-\*\*)')
         match = cpf_pattern.search(transaction_str)
-
         if match:
             return True
         return False
@@ -145,7 +114,6 @@ class ProviderSicoob(ProviderBank):
         transaction_str = ''.join(''.join(sublist) + ' ' for sublist in transaction)
         cnpj_pattern = re.compile(r'\b\d{2}\.\d{3}\.\d{3}\d{4}-\d{2}\b')
         match = cnpj_pattern.search(transaction_str)
-
         if match:
             return True
         return False
@@ -154,12 +122,10 @@ class ProviderSicoob(ProviderBank):
         if len(transaction) >= 3:
             antepenultimate_item =''.join( transaction[-3])
             last_item = transaction[-1]
-
             if word_key in last_item:
                 if self._verify_pix_is_cpf([antepenultimate_item]) or self._verify_pix_is_cnpj([antepenultimate_item]):
                     return True
         return False
-
 
     def _verify_ted(self, transaction):
         if len(transaction)>= 4:
@@ -180,11 +146,26 @@ class ProviderSicoob(ProviderBank):
     
     def _verify_payment_form(self,transaction, words):
         transaction_str = ''.join(''.join(sublist) + '' for sublist in transaction)
-        
         for word in words:
             if word in transaction_str:
                 return word    
         return None
+
+    def _verify_transf_pix(self,transaction):
+        word = 'Transferência'
+        transaction_str = ''.join(''.join(sublist) + ' ' for sublist in transaction)
+        if word in transaction_str and "REM.:" in transaction[1][0]:
+            return True
+        return False
+
+    def _verify_dep(self, transaction):
+
+        word='DEP'
+        transaction_str = ''.join(''.join(sublist) + ' ' for sublist in transaction)
+        if word in transaction_str and len(transaction)<=3:
+            return True
+        return False
+
 
 
            

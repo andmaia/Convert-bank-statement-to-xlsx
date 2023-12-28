@@ -25,20 +25,36 @@ def process_transactions(grouped_transactions, bank_provider):
     list_discounts = []
 
     for line in grouped_transactions:
+        data = bank_provider.create_transf_entrace(line)
+        if data:
+            list_discounts.append(data)
+            continue
+
+        data = bank_provider.create_dep_entrace(line)
+        if data:
+            list_discounts.append(data)
+            continue
+        
+
         data = bank_provider.create_pix_entrace(line)
         if data:
             list_discounts.append(data)
+            continue
         
         data = bank_provider.create_discount(line)
         if data:
             list_discounts.append(data)
+            continue
         
         data = bank_provider.create_credit_entrace(line)
         if data:
             list_discounts.append(data)
+            continue
         
         data = bank_provider.create_ted_entrace(line)
         if data:
             list_discounts.append(data)
+            continue
+     
     
     return list_discounts
